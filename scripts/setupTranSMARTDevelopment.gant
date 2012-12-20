@@ -59,6 +59,7 @@ target('default': "cleanup and setup") {
     depends(setup)
     clean()
     install()
+
 }
 
 target(setup: "any initializations") {
@@ -105,6 +106,9 @@ target(install: "The installation script") {
 
 //    2. Verify DEAPP table row counts using deapp/data/check_counts.sql.
     verifyDEAPPdata()
+
+//  3. Verify BIOMART table row counts using biomart/data/check_counts.sql.
+    verifyBIOMARTdata()
 }
 
 target(createTransmartDB: "createTransmartDB")
@@ -136,7 +140,7 @@ target(verifySEARCHAPPdata: "verify SEARCHAPP data")
     //dbScriptStep("${build_dir}/transmartApp-DB/postgresql/searchapp/data/check_counts.sql", "biomart_user", transmart_db_name, true, false, ".", "biomart_user")
 
     FileReader reader = new FileReader(ant_last_step_output)
-    def lines =reader.readLines()
+    def lines = reader.readLines()
 
     //verify some of the counts:
     assertEquals(lines.get(2),"SEARCH_KEYWORD_TERM           | 105844")
@@ -151,13 +155,27 @@ target(verifyDEAPPdata: "verify DEAPP data")
     dbScriptStep("${build_dir}/transmartApp-DB/postgresql/deapp/data/check_counts.sql", postgres_user, transmart_db_name, true, false, ".")
 
     FileReader reader = new FileReader(ant_last_step_output)
-    def lines =reader.readLines()
+    def lines = reader.readLines()
 
     //verify some of the counts:
     assertEquals(lines.get(2),"DE_SUBJECT_MICROARRAY_DATA | 54400")
     assertEquals(lines.get(3),"DE_MRNA_ANNOTATION         |  5440")
     assertEquals(lines.get(4),"DE_SUBJECT_SAMPLE_MAPPING  |    10")
     assertEquals(lines.get(5),"DE_SAVED_COMPARISON        |     5")
+}
+
+target(verifyBIOMARTdata: "verify DEAPP data")
+{
+    dbScriptStep("${build_dir}/transmartApp-DB/postgresql/biomart/data/check_counts.sql", postgres_user, transmart_db_name, true, false, ".")
+
+    FileReader reader = new FileReader(ant_last_step_output)
+    def lines = reader.readLines()
+
+    //verify some of the counts:
+    assertEquals(lines.get(2),"BIO_ASSAY_FEATURE_GROUP     | 237002")
+    assertEquals(lines.get(3),"BIO_ASSAY_ANALYSIS_DATA     | 184538")
+    assertEquals(lines.get(4),"BIO_DATA_EXT_CODE           | 134965")
+    assertEquals(lines.get(5),"BIO_DATA_UID                | 126764")
 }
 
 
