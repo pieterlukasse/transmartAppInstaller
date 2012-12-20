@@ -32,22 +32,23 @@ import org.apache.tools.ant.taskdefs.Ant
  * @author : pieter lukasse (pieter@thehyve.nl)
  */
 
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//note: make sure your GRAILS is 2.0.4
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//note: make sure your GRAILS is 2.0.4 or higher...
+//tested with version 2.0.4
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 def ant = new AntBuilder();
-grailsHome = ant.project.properties."environment.GRAILS_HOME"
 
-ant.property ( file : 'setupTranSMARTDevelopment.properties' )  //TODO : find out how to read out these properties. Then we could set properties below in the .properties file and read it out from there
+properties = readProperties()
 
-tools_git_cmd="C:/Program Files/Git/bin/git.exe"
-tools_psql_cmd="D:/installations/PostgreSQL/9.2/bin/psql.exe"
-locations_jboss="D:/installations/jboss-4.2.2.GA/jboss-4.2.2.GA"
-build_dir="D:/test_build4"
+
+tools_git_cmd=properties.getProperty("tools.git.cmd")
+tools_psql_cmd=properties.getProperty("tools.psql.cmd")
+locations_jboss=properties.getProperty("locations.jboss")
+build_dir=properties.getProperty("locations.build.out")
 postgres_user="postgres"
 transmart_db_name="transmart"  //better keep it with this value for now...script does not deal with other names for now  (e.g. still a problem in - a. Create the transmart database (can use script transmart-db.sql))
-transmart_db_tablespace_location="D:/DBDATA/tablespaces"
+transmart_db_tablespace_location=properties.getProperty("locations.db.tablespaces")
 
 //some handy derived globals:
 ant_last_step_output=build_dir + "/ant_last_step_out.txt"
@@ -58,8 +59,8 @@ psql_location = new File(tools_psql_cmd).getParent()
 target('default': "cleanup and setup") {
     depends(setup)
     clean()
-    install()
-
+    //install()
+    verifyDEAPPdata()
 }
 
 target(setup: "any initializations") {
@@ -375,4 +376,15 @@ def listToString(valuesList)
         result += value + " ";
     }
     return result;
+}
+
+//Alternative for ant.property method which does not seem to work...
+//ant.property( file : 'D:\\development\\transmartAppInstaller\\scripts\\setupTranSMARTDevelopment.properties' )  //TODO : find out how to read out these properties. Then we could set properties below in the .properties file and read it out from there
+//def properties = ant.getProperties();
+def readProperties()
+{
+    def propertiesFile = new FileReader("setupTranSMARTDevelopment.properties");
+    def properties = new Properties();
+    properties.load(propertiesFile);
+    return properties
 }
